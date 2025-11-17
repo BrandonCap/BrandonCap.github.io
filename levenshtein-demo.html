@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levenshtein Edit Distance Calculator - Brandon Capparelli</title>
+    <link rel="icon" type="image/jpeg" href="assets/me.jpeg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <a href="index.html" class="logo">Portfolio</a>
+                <div class="nav-right">
+                    <ul class="nav-links">
+                        <li><a href="projects.html">Projects</a></li>
+                    </ul>
+                    <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                        <span class="toggle-icon">🌙</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Levenshtein Edit Distance Calculator</h1>
+                <p>Calculate the minimum edits needed to transform one string into another</p>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <div class="container">
+                <div class="demo-explanation">
+                    <h2>What is Levenshtein Distance?</h2>
+                    <p>
+                        The Levenshtein distance is a measure of the difference between two strings.
+                        It calculates the minimum number of single-character edits (insertions, deletions, or substitutions)
+                        required to change one string into another.
+                    </p>
+                    <p><strong>Common applications include:</strong></p>
+                    <ul>
+                        <li><strong>Spell checking</strong> - Finding the closest correctly spelled word</li>
+                        <li><strong>DNA analysis</strong> - Comparing genetic sequences</li>
+                        <li><strong>Plagiarism detection</strong> - Identifying similar text</li>
+                        <li><strong>Fuzzy string matching</strong> - Search engines and autocomplete</li>
+                    </ul>
+                </div>
+
+                <div class="demo-controls">
+                    <div class="input-group">
+                        <label for="string1">First String:</label>
+                        <input type="text" id="string1" value="kitten" placeholder="Enter first string">
+                    </div>
+                    <div class="input-group">
+                        <label for="string2">Second String:</label>
+                        <input type="text" id="string2" value="sitting" placeholder="Enter second string">
+                    </div>
+                    <button id="calculateBtn" class="btn">Calculate Distance</button>
+                </div>
+
+                <div id="resultDisplay" class="result-display"></div>
+
+                <div class="matrix-container">
+                    <h3>Dynamic Programming Matrix:</h3>
+                    <div id="matrixDisplay" class="matrix-display"></div>
+                </div>
+
+                <div class="operations-container">
+                    <h3>Edit Operations:</h3>
+                    <div id="operationsDisplay" class="operations-display"></div>
+                </div>
+
+                <div class="demo-navigation">
+                    <a href="projects.html" class="btn btn-secondary">Back to Projects</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Brandon Capparelli. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script src="levenshtein.js"></script>
+</body>
+</html>

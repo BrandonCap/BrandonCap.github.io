@@ -104,7 +104,7 @@ header {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(29, 53, 87, 0.7), rgba(69, 123, 157, 0.7)), url('assets/banner.jpg');
+    background: linear-gradient(rgba(29, 53, 87, 0.7), rgba(69, 123, 157, 0.7)), url('Assets/banner.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -154,7 +154,7 @@ header {
 
 /* Page Header (Projects Page) */
 .page-header {
-    background: linear-gradient(rgba(29, 53, 87, 0.7), rgba(69, 123, 157, 0.7)), url('assets/banner.jpg');
+    background: linear-gradient(rgba(29, 53, 87, 0.7), rgba(69, 123, 157, 0.7)), url('Assets/banner.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

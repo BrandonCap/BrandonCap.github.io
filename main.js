@@ -1,7 +1,40 @@
 // Main JavaScript file for portfolio website
 
+// Global Header Component
+function initializeHeader(pathPrefix = '') {
+    const header = document.querySelector('header');
+    if (!header) return;
+
+    header.innerHTML = `
+        <nav>
+            <div class="nav-container">
+                <a href="${pathPrefix}index.html" class="logo">BC</a>
+                <div class="nav-right">
+                    <ul class="nav-links">
+                        <li><a href="${pathPrefix}projects.html" class="nav-link-projects">Projects</a></li>
+                    </ul>
+                    <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                        <span class="toggle-icon">🌙</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    `;
+
+    // Highlight active page
+    const currentPage = window.location.pathname.split('/').pop();
+    if (currentPage === 'projects.html' || currentPage.includes('demo.html')) {
+        const projectsLink = header.querySelector('.nav-link-projects');
+        if (projectsLink) projectsLink.classList.add('active');
+    }
+}
+
 // Dark Mode Functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize header first (reads pathPrefix from data attribute if set)
+    const header = document.querySelector('header');
+    const pathPrefix = header ? (header.dataset.pathPrefix || '') : '';
+    initializeHeader(pathPrefix);
     // Check for saved dark mode preference
     const darkModeToggle = document.getElementById('darkModeToggle');
     const isDarkMode = localStorage.getItem('darkMode') === 'enabled';

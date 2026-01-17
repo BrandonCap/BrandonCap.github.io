@@ -23,11 +23,23 @@
 
   // Initialize the application
   function init() {
+    // Check if players array is available from config.js
+    if (typeof players === 'undefined' || !Array.isArray(players)) {
+      console.error('Soundboard Error: players array not found. Make sure config.js is loaded before app.js');
+      const soundboard = document.getElementById('soundboard');
+      if (soundboard) {
+        soundboard.innerHTML = '<div class="empty-state"><p>Error: Player configuration not loaded. Check console for details.</p></div>';
+      }
+      return;
+    }
+
     cacheElements();
     loadSavedState();
     setupEventListeners();
     renderSoundboard();
     updateVolumeDisplay();
+    updateMuteDisplay();
+    updateThemeIcon();
   }
 
   // Cache frequently used DOM elements
@@ -72,7 +84,6 @@
       const savedTheme = localStorage.getItem('soundboard_theme');
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
-        updateThemeIcon();
       }
 
       const savedView = localStorage.getItem('soundboard_view');
@@ -100,32 +111,50 @@
   // Setup event listeners
   function setupEventListeners() {
     // Volume control
-    elements.volumeSlider.addEventListener('input', handleVolumeChange);
+    if (elements.volumeSlider) {
+      elements.volumeSlider.addEventListener('input', handleVolumeChange);
+    }
 
     // Mute button
-    elements.muteBtn.addEventListener('click', toggleMute);
+    if (elements.muteBtn) {
+      elements.muteBtn.addEventListener('click', toggleMute);
+    }
 
     // View toggle
-    elements.viewToggle.addEventListener('change', handleViewToggle);
+    if (elements.viewToggle) {
+      elements.viewToggle.addEventListener('change', handleViewToggle);
+    }
 
     // Lineup management
-    elements.manageLineupBtn.addEventListener('click', openLineupPanel);
-    elements.closeLineupBtn.addEventListener('click', closeLineupPanel);
-    elements.saveLineupBtn.addEventListener('click', saveLineup);
-    elements.clearLineupBtn.addEventListener('click', clearLineup);
+    if (elements.manageLineupBtn) {
+      elements.manageLineupBtn.addEventListener('click', openLineupPanel);
+    }
+    if (elements.closeLineupBtn) {
+      elements.closeLineupBtn.addEventListener('click', closeLineupPanel);
+    }
+    if (elements.saveLineupBtn) {
+      elements.saveLineupBtn.addEventListener('click', saveLineup);
+    }
+    if (elements.clearLineupBtn) {
+      elements.clearLineupBtn.addEventListener('click', clearLineup);
+    }
 
     // Theme toggle
-    elements.themeToggle.addEventListener('click', toggleTheme);
+    if (elements.themeToggle) {
+      elements.themeToggle.addEventListener('click', toggleTheme);
+    }
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcut);
 
     // Click outside lineup panel to close
-    elements.lineupPanel.addEventListener('click', function(e) {
-      if (e.target === elements.lineupPanel) {
-        closeLineupPanel();
-      }
-    });
+    if (elements.lineupPanel) {
+      elements.lineupPanel.addEventListener('click', function(e) {
+        if (e.target === elements.lineupPanel) {
+          closeLineupPanel();
+        }
+      });
+    }
   }
 
   // Render the soundboard

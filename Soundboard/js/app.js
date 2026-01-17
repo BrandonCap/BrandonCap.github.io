@@ -13,6 +13,8 @@
     lineup: [],
     viewMode: 'roster', // 'roster' or 'lineup'
     volume: 0.8,
+    previousVolume: 0.8, // Store volume before muting
+    isMuted: false,
     isLoading: false
   };
 
@@ -34,7 +36,9 @@
       soundboard: document.getElementById('soundboard'),
       volumeSlider: document.getElementById('volume-slider'),
       volumeValue: document.getElementById('volume-value'),
-      stopBtn: document.getElementById('stop-btn'),
+      muteBtn: document.getElementById('mute-btn'),
+      muteIcon: document.querySelector('.mute-icon'),
+      muteLabel: document.querySelector('.mute-label'),
       viewToggle: document.getElementById('view-toggle'),
       viewLabel: document.getElementById('view-label'),
       lineupPanel: document.getElementById('lineup-panel'),
@@ -46,7 +50,8 @@
       closeLineupBtn: document.getElementById('close-lineup-btn'),
       nowPlaying: document.getElementById('now-playing'),
       nowPlayingText: document.getElementById('now-playing-text'),
-      themeToggle: document.getElementById('theme-toggle')
+      themeToggle: document.getElementById('theme-toggle'),
+      themeIcon: document.querySelector('.theme-icon')
     };
   }
 
@@ -67,6 +72,7 @@
       const savedTheme = localStorage.getItem('soundboard_theme');
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
+        updateThemeIcon();
       }
 
       const savedView = localStorage.getItem('soundboard_view');
@@ -96,8 +102,8 @@
     // Volume control
     elements.volumeSlider.addEventListener('input', handleVolumeChange);
 
-    // Stop button
-    elements.stopBtn.addEventListener('click', stopAudio);
+    // Mute button
+    elements.muteBtn.addEventListener('click', toggleMute);
 
     // View toggle
     elements.viewToggle.addEventListener('change', handleViewToggle);
@@ -195,12 +201,25 @@
         <span class="play-icon">&#9658;</span>
         <span class="playing-icon">&#9632;</span>
       </div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
       ${shortcutHint}
     `;
 
-    button.addEventListener('click', () => playAudio(player));
+    // Toggle play/stop on click
+    button.addEventListener('click', () => togglePlayAudio(player));
 
     return button;
+  }
+
+  // Toggle play/stop for a player
+  function togglePlayAudio(player) {
+    if (state.currentPlayingId === player.id) {
+      // Already playing this player's audio, stop it
+      stopAudio();
+    } else {
+      // Play this player's audio
+      playAudio(player);
+    }
   }
 
   // Play audio for a player
@@ -232,10 +251,28 @@
     });
 
     audio.addEventListener('ended', () => {
+      // Reset progress bar
+      const btn = document.querySelector(`[data-player-id="${player.id}"]`);
+      if (btn) {
+        const progressFill = btn.querySelector('.progress-fill');
+        if (progressFill) progressFill.style.width = '0%';
+      }
       state.currentAudio = null;
       state.currentPlayingId = null;
       updatePlayingState();
       hideNowPlaying();
+    });
+
+    // Update progress bar as audio plays
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        const btn = document.querySelector(`[data-player-id="${player.id}"]`);
+        if (btn) {
+          const progressFill = btn.querySelector('.progress-fill');
+          if (progressFill) progressFill.style.width = `${progress}%`;
+        }
+      }
     });
 
     audio.addEventListener('error', (e) => {
@@ -263,6 +300,12 @@
   // Stop currently playing audio
   function stopAudio() {
     if (state.currentAudio) {
+      // Reset progress bar for the currently playing button
+      const btn = document.querySelector(`[data-player-id="${state.currentPlayingId}"]`);
+      if (btn) {
+        const progressFill = btn.querySelector('.progress-fill');
+        if (progressFill) progressFill.style.width = '0%';
+      }
       state.currentAudio.pause();
       state.currentAudio.currentTime = 0;
       state.currentAudio = null;
@@ -298,6 +341,18 @@
   // Handle volume change
   function handleVolumeChange(e) {
     state.volume = parseFloat(e.target.value);
+
+    // If user manually adjusts volume, unmute
+    if (state.isMuted && state.volume > 0) {
+      state.isMuted = false;
+      updateMuteDisplay();
+    }
+
+    // Update previous volume for unmute restoration
+    if (state.volume > 0) {
+      state.previousVolume = state.volume;
+    }
+
     if (state.currentAudio) {
       state.currentAudio.volume = state.volume;
     }
@@ -496,6 +551,54 @@
     document.body.classList.toggle('light-theme');
     const isLight = document.body.classList.contains('light-theme');
     localStorage.setItem('soundboard_theme', isLight ? 'light' : 'dark');
+    updateThemeIcon();
+  }
+
+  // Update theme icon based on current theme
+  function updateThemeIcon() {
+    const isLight = document.body.classList.contains('light-theme');
+    if (elements.themeIcon) {
+      elements.themeIcon.textContent = isLight ? '☀️' : '🌙';
+    }
+  }
+
+  // Toggle mute
+  function toggleMute() {
+    state.isMuted = !state.isMuted;
+
+    if (state.isMuted) {
+      // Muting: save current volume and set to 0
+      state.previousVolume = state.volume;
+      state.volume = 0;
+    } else {
+      // Unmuting: restore previous volume
+      state.volume = state.previousVolume;
+    }
+
+    // Update audio if playing
+    if (state.currentAudio) {
+      state.currentAudio.volume = state.volume;
+    }
+
+    // Update UI
+    elements.volumeSlider.value = state.volume;
+    updateVolumeDisplay();
+    updateMuteDisplay();
+  }
+
+  // Update mute button display
+  function updateMuteDisplay() {
+    if (elements.muteIcon && elements.muteLabel) {
+      if (state.isMuted) {
+        elements.muteIcon.textContent = '🔇';
+        elements.muteLabel.textContent = 'Unmute';
+        elements.muteBtn.classList.add('muted');
+      } else {
+        elements.muteIcon.textContent = '🔊';
+        elements.muteLabel.textContent = 'Mute';
+        elements.muteBtn.classList.remove('muted');
+      }
+    }
   }
 
   // Handle keyboard shortcuts
@@ -513,15 +616,15 @@
         const playerId = parseInt(btn.dataset.playerId);
         const player = players.find(p => p.id === playerId);
         if (player) {
-          playAudio(player);
+          togglePlayAudio(player);
         }
       }
     }
 
-    // Spacebar to stop
-    if (e.key === ' ' || e.key === 'Escape') {
+    // M key to toggle mute
+    if (e.key === 'm' || e.key === 'M') {
       e.preventDefault();
-      stopAudio();
+      toggleMute();
     }
   }
 

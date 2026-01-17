@@ -154,29 +154,45 @@ body {
   color: var(--text-primary);
 }
 
-/* Stop button */
-.stop-btn {
+/* Mute button */
+.mute-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: white;
-  background: var(--error);
-  border: none;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   transition: var(--transition);
 }
 
-.stop-btn:hover {
-  background: #dc2626;
+.mute-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
   transform: translateY(-1px);
 }
 
-.stop-btn:active {
+.mute-btn:active {
   transform: translateY(0);
+}
+
+.mute-btn.muted {
+  background: var(--error);
+  border-color: var(--error);
+  color: white;
+}
+
+.mute-btn.muted:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.mute-icon {
+  font-size: 1.1rem;
 }
 
 /* View toggle */
@@ -497,6 +513,33 @@ body {
 .player-btn.playing .shortcut-hint {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+}
+
+/* Progress bar */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-primary);
+  transition: width 0.1s linear;
+}
+
+.player-btn.playing .progress-bar {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.player-btn.playing .progress-fill {
+  background: rgba(255, 255, 255, 0.8);
 }
 
 /* Empty state */

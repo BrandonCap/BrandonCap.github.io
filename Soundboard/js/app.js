@@ -492,9 +492,19 @@
   function setupDragAndDrop() {
     const lineupItems = elements.lineupList.querySelectorAll('.lineup-item');
     let draggedItem = null;
-    let touchStartY = 0;
-    let touchCurrentItem = null;
-    let placeholder = null;
+
+    // Helper to find target item by Y position
+    function findTargetItemAtY(touchY, excludeItem) {
+      const items = elements.lineupList.querySelectorAll('.lineup-item');
+      for (const item of items) {
+        if (item === excludeItem) continue;
+        const rect = item.getBoundingClientRect();
+        if (touchY >= rect.top && touchY <= rect.bottom) {
+          return item;
+        }
+      }
+      return null;
+    }
 
     lineupItems.forEach(item => {
       // Mouse drag events (desktop)
@@ -532,33 +542,43 @@
       });
 
       // Touch events (mobile)
+      let touchTimeout = null;
+      let isDragging = false;
+
       item.addEventListener('touchstart', (e) => {
         // Only start drag if touching the item itself, not the remove button
         if (e.target.classList.contains('lineup-remove-btn')) return;
 
-        touchStartY = e.touches[0].clientY;
         draggedItem = item;
-        touchCurrentItem = item;
+        isDragging = false;
 
-        // Add visual feedback after a short delay (to differentiate from scroll)
-        setTimeout(() => {
-          if (draggedItem === item) {
-            item.classList.add('dragging');
-          }
-        }, 150);
+        // Start drag after a long press (200ms)
+        touchTimeout = setTimeout(() => {
+          isDragging = true;
+          item.classList.add('dragging');
+        }, 200);
       }, { passive: true });
 
       item.addEventListener('touchmove', (e) => {
         if (!draggedItem || draggedItem !== item) return;
 
+        // If we moved before the long press completed, cancel the drag
+        if (!isDragging && touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
+          draggedItem = null;
+          return;
+        }
+
+        if (!isDragging) return;
+
+        e.preventDefault(); // Prevent scrolling while dragging
+
         const touch = e.touches[0];
         const touchY = touch.clientY;
 
-        // Find which item we're over
-        const elementsAtPoint = document.elementsFromPoint(touch.clientX, touchY);
-        const targetItem = elementsAtPoint.find(el =>
-          el.classList.contains('lineup-item') && el !== draggedItem
-        );
+        // Find which item we're over using bounding rect comparison
+        const targetItem = findTargetItemAtY(touchY, draggedItem);
 
         // Update drag-over state
         document.querySelectorAll('.lineup-item').forEach(i => {
@@ -568,17 +588,19 @@
             i.classList.remove('drag-over');
           }
         });
-
-        touchCurrentItem = targetItem || touchCurrentItem;
-
-        // Prevent scrolling while dragging
-        if (item.classList.contains('dragging')) {
-          e.preventDefault();
-        }
       }, { passive: false });
 
       item.addEventListener('touchend', (e) => {
-        if (!draggedItem) return;
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
+        }
+
+        if (!draggedItem || !isDragging) {
+          draggedItem = null;
+          isDragging = false;
+          return;
+        }
 
         item.classList.remove('dragging');
         document.querySelectorAll('.lineup-item').forEach(i => i.classList.remove('drag-over'));
@@ -586,10 +608,7 @@
         // Find the target item at touch end position
         if (e.changedTouches.length > 0) {
           const touch = e.changedTouches[0];
-          const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
-          const targetItem = elementsAtPoint.find(el =>
-            el.classList.contains('lineup-item') && el !== draggedItem
-          );
+          const targetItem = findTargetItemAtY(touch.clientY, draggedItem);
 
           if (targetItem && draggedItem !== targetItem) {
             const fromId = parseInt(draggedItem.dataset.playerId);
@@ -599,16 +618,20 @@
         }
 
         draggedItem = null;
-        touchCurrentItem = null;
+        isDragging = false;
       });
 
       item.addEventListener('touchcancel', () => {
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+          touchTimeout = null;
+        }
         if (draggedItem) {
           draggedItem.classList.remove('dragging');
         }
         document.querySelectorAll('.lineup-item').forEach(i => i.classList.remove('drag-over'));
         draggedItem = null;
-        touchCurrentItem = null;
+        isDragging = false;
       });
     });
   }

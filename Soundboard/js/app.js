@@ -488,12 +488,16 @@
     return item;
   }
 
-  // Setup drag and drop for lineup reordering
+  // Setup drag and drop for lineup reordering (supports both mouse and touch)
   function setupDragAndDrop() {
     const lineupItems = elements.lineupList.querySelectorAll('.lineup-item');
     let draggedItem = null;
+    let touchStartY = 0;
+    let touchCurrentItem = null;
+    let placeholder = null;
 
     lineupItems.forEach(item => {
+      // Mouse drag events (desktop)
       item.addEventListener('dragstart', (e) => {
         draggedItem = item;
         item.classList.add('dragging');
@@ -525,6 +529,86 @@
           const toId = parseInt(item.dataset.playerId);
           reorderLineup(fromId, toId);
         }
+      });
+
+      // Touch events (mobile)
+      item.addEventListener('touchstart', (e) => {
+        // Only start drag if touching the item itself, not the remove button
+        if (e.target.classList.contains('lineup-remove-btn')) return;
+
+        touchStartY = e.touches[0].clientY;
+        draggedItem = item;
+        touchCurrentItem = item;
+
+        // Add visual feedback after a short delay (to differentiate from scroll)
+        setTimeout(() => {
+          if (draggedItem === item) {
+            item.classList.add('dragging');
+          }
+        }, 150);
+      }, { passive: true });
+
+      item.addEventListener('touchmove', (e) => {
+        if (!draggedItem || draggedItem !== item) return;
+
+        const touch = e.touches[0];
+        const touchY = touch.clientY;
+
+        // Find which item we're over
+        const elementsAtPoint = document.elementsFromPoint(touch.clientX, touchY);
+        const targetItem = elementsAtPoint.find(el =>
+          el.classList.contains('lineup-item') && el !== draggedItem
+        );
+
+        // Update drag-over state
+        document.querySelectorAll('.lineup-item').forEach(i => {
+          if (i === targetItem) {
+            i.classList.add('drag-over');
+          } else {
+            i.classList.remove('drag-over');
+          }
+        });
+
+        touchCurrentItem = targetItem || touchCurrentItem;
+
+        // Prevent scrolling while dragging
+        if (item.classList.contains('dragging')) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      item.addEventListener('touchend', (e) => {
+        if (!draggedItem) return;
+
+        item.classList.remove('dragging');
+        document.querySelectorAll('.lineup-item').forEach(i => i.classList.remove('drag-over'));
+
+        // Find the target item at touch end position
+        if (e.changedTouches.length > 0) {
+          const touch = e.changedTouches[0];
+          const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+          const targetItem = elementsAtPoint.find(el =>
+            el.classList.contains('lineup-item') && el !== draggedItem
+          );
+
+          if (targetItem && draggedItem !== targetItem) {
+            const fromId = parseInt(draggedItem.dataset.playerId);
+            const toId = parseInt(targetItem.dataset.playerId);
+            reorderLineup(fromId, toId);
+          }
+        }
+
+        draggedItem = null;
+        touchCurrentItem = null;
+      });
+
+      item.addEventListener('touchcancel', () => {
+        if (draggedItem) {
+          draggedItem.classList.remove('dragging');
+        }
+        document.querySelectorAll('.lineup-item').forEach(i => i.classList.remove('drag-over'));
+        draggedItem = null;
+        touchCurrentItem = null;
       });
     });
   }

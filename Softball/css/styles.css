@@ -172,6 +172,8 @@ body {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .mute-btn:hover {
@@ -193,6 +195,11 @@ body {
 .mute-btn.muted:hover {
   background: #dc2626;
   border-color: #dc2626;
+}
+
+.mute-icon,
+.mute-label {
+  pointer-events: none;
 }
 
 .mute-icon {

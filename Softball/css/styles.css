@@ -1186,6 +1186,11 @@ body {
   .footer .shortcuts {
     display: none;
   }
+
+  /* Hide volume control on mobile - iOS doesn't support programmatic volume */
+  .volume-control {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {

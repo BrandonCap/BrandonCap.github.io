@@ -316,7 +316,7 @@
 
     // Create new audio element
     const audio = new Audio(player.audioFile);
-    audio.volume = state.volume;
+    audio.muted = state.isMuted;
 
     // Update state
     state.currentAudio = audio;
@@ -858,23 +858,12 @@
   function toggleMute() {
     state.isMuted = !state.isMuted;
 
-    if (state.isMuted) {
-      // Muting: save current volume and set to 0
-      state.previousVolume = state.volume;
-      state.volume = 0;
-    } else {
-      // Unmuting: restore previous volume
-      state.volume = state.previousVolume;
-    }
-
-    // Update audio if playing
+    // Update audio if playing - use muted property (works on iOS)
     if (state.currentAudio) {
-      state.currentAudio.volume = state.volume;
+      state.currentAudio.muted = state.isMuted;
     }
 
     // Update UI
-    elements.volumeSlider.value = state.volume;
-    updateVolumeDisplay();
     updateMuteDisplay();
   }
 

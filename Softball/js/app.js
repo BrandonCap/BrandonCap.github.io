@@ -11,11 +11,35 @@
     currentAudio: null,
     currentPlayingId: null,
     lineup: [],
+    defensiveLineup: {
+      P: null,   // Pitcher
+      C: null,   // Catcher
+      '1B': null, // First Base
+      '2B': null, // Second Base
+      '3B': null, // Third Base
+      SS: null,  // Shortstop
+      LF: null,  // Left Field
+      CF: null,  // Center Field
+      RF: null   // Right Field
+    },
     viewMode: 'roster', // 'roster' or 'lineup'
     volume: 0.8,
     previousVolume: 0.8, // Store volume before muting
     isMuted: false,
     isLoading: false
+  };
+
+  // Position labels for display
+  const positionLabels = {
+    P: 'Pitcher',
+    C: 'Catcher',
+    '1B': '1st Base',
+    '2B': '2nd Base',
+    '3B': '3rd Base',
+    SS: 'Shortstop',
+    LF: 'Left Field',
+    CF: 'Center Field',
+    RF: 'Right Field'
   };
 
   // DOM Elements
@@ -63,7 +87,12 @@
       nowPlaying: document.getElementById('now-playing'),
       nowPlayingText: document.getElementById('now-playing-text'),
       themeToggle: document.getElementById('theme-toggle'),
-      themeIcon: document.querySelector('.theme-icon')
+      themeIcon: document.querySelector('.theme-icon'),
+      defensivePanel: document.getElementById('defensive-panel'),
+      defensiveLineupBtn: document.getElementById('defensive-lineup-btn'),
+      closeDefensiveBtn: document.getElementById('close-defensive-btn'),
+      saveDefensiveBtn: document.getElementById('save-defensive-btn'),
+      clearDefensiveBtn: document.getElementById('clear-defensive-btn')
     };
   }
 
@@ -73,6 +102,11 @@
       const savedLineup = localStorage.getItem('soundboard_lineup');
       if (savedLineup) {
         state.lineup = JSON.parse(savedLineup);
+      }
+
+      const savedDefensiveLineup = localStorage.getItem('soundboard_defensive_lineup');
+      if (savedDefensiveLineup) {
+        state.defensiveLineup = JSON.parse(savedDefensiveLineup);
       }
 
       const savedVolume = localStorage.getItem('soundboard_volume');
@@ -101,6 +135,7 @@
   function saveState() {
     try {
       localStorage.setItem('soundboard_lineup', JSON.stringify(state.lineup));
+      localStorage.setItem('soundboard_defensive_lineup', JSON.stringify(state.defensiveLineup));
       localStorage.setItem('soundboard_volume', state.volume.toString());
       localStorage.setItem('soundboard_view', state.viewMode);
     } catch (e) {
@@ -144,6 +179,20 @@
       elements.themeToggle.addEventListener('click', toggleTheme);
     }
 
+    // Defensive lineup management
+    if (elements.defensiveLineupBtn) {
+      elements.defensiveLineupBtn.addEventListener('click', openDefensivePanel);
+    }
+    if (elements.closeDefensiveBtn) {
+      elements.closeDefensiveBtn.addEventListener('click', closeDefensivePanel);
+    }
+    if (elements.saveDefensiveBtn) {
+      elements.saveDefensiveBtn.addEventListener('click', saveDefensiveLineup);
+    }
+    if (elements.clearDefensiveBtn) {
+      elements.clearDefensiveBtn.addEventListener('click', clearDefensiveLineup);
+    }
+
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcut);
 
@@ -152,6 +201,15 @@
       elements.lineupPanel.addEventListener('click', function(e) {
         if (e.target === elements.lineupPanel) {
           closeLineupPanel();
+        }
+      });
+    }
+
+    // Click outside defensive panel to close
+    if (elements.defensivePanel) {
+      elements.defensivePanel.addEventListener('click', function(e) {
+        if (e.target === elements.defensivePanel) {
+          closeDefensivePanel();
         }
       });
     }
@@ -714,6 +772,72 @@
     }
   }
 
+  // Open defensive lineup panel
+  function openDefensivePanel() {
+    elements.defensivePanel.classList.add('open');
+    renderDefensivePanel();
+  }
+
+  // Close defensive lineup panel
+  function closeDefensivePanel() {
+    elements.defensivePanel.classList.remove('open');
+  }
+
+  // Render defensive lineup panel
+  function renderDefensivePanel() {
+    const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+
+    positions.forEach(pos => {
+      const select = document.getElementById(`pos-${pos}`);
+      if (!select) return;
+
+      // Clear existing options
+      select.innerHTML = '<option value="">-- Select --</option>';
+
+      // Add lineup players as options
+      state.lineup.forEach(playerId => {
+        const player = players.find(p => p.id === playerId);
+        if (player) {
+          const option = document.createElement('option');
+          option.value = player.id;
+          option.textContent = player.number ? `#${player.number} ${player.name}` : player.name;
+
+          // Check if already selected at this position
+          if (state.defensiveLineup[pos] === player.id) {
+            option.selected = true;
+          }
+
+          select.appendChild(option);
+        }
+      });
+
+      // Add change listener
+      select.onchange = function() {
+        const value = this.value;
+        state.defensiveLineup[pos] = value ? parseInt(value) : null;
+      };
+    });
+  }
+
+  // Save defensive lineup
+  function saveDefensiveLineup() {
+    saveState();
+    closeDefensivePanel();
+    showNotification('Defensive lineup saved!');
+  }
+
+  // Clear defensive lineup
+  function clearDefensiveLineup() {
+    if (confirm('Are you sure you want to clear the defensive lineup?')) {
+      state.defensiveLineup = {
+        P: null, C: null, '1B': null, '2B': null, '3B': null,
+        SS: null, LF: null, CF: null, RF: null
+      };
+      renderDefensivePanel();
+      saveState();
+    }
+  }
+
   // Toggle theme
   function toggleTheme() {
     document.body.classList.toggle('light-theme');
@@ -774,20 +898,6 @@
     // Don't handle shortcuts if a modal is open or in an input
     if (elements.lineupPanel.classList.contains('open')) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-    // Number keys 1-9, 0 for player shortcuts
-    if (e.key >= '0' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      e.preventDefault();
-      const index = e.key === '0' ? 9 : parseInt(e.key) - 1;
-      const btn = document.querySelector(`[data-index="${index}"]`);
-      if (btn) {
-        const playerId = parseInt(btn.dataset.playerId);
-        const player = players.find(p => p.id === playerId);
-        if (player) {
-          togglePlayAudio(player);
-        }
-      }
-    }
 
     // M key to toggle mute
     if (e.key === 'm' || e.key === 'M') {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Baseball Walk-Up Music Soundboard - Play audio clips for player at-bats">
   <meta name="theme-color" content="#1a1a2e">
-  <title>Walk-Up Music Soundboard</title>
+  <title>Bunt Cakes Manager</title>
 
   <!-- Favicon (optional - add your own) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>">
@@ -18,8 +18,8 @@
     <!-- Header with controls -->
     <header class="header">
       <div class="header-title">
-        <span class="icon">⚾</span>
-        <h1>Walk-Up Music</h1>
+        <span class="icon"></span>
+        <h1>Bunt Cakes Manager</h1>
       </div>
 
       <div class="controls">
@@ -48,7 +48,10 @@
 
         <!-- Manage lineup button -->
         <button id="manage-lineup-btn" class="manage-lineup-btn">
-          <span>&#9776;</span> Manage Lineup
+          <span>&#9776;</span> Lineup
+        </button>
+        <button id="defensive-lineup-btn" class="defensive-lineup-btn">
+          <span>&#9830;</span> Defense
         </button>
 
         <!-- Theme toggle -->
@@ -106,13 +109,78 @@
       </div>
     </div>
 
-    <!-- Footer with keyboard shortcuts -->
-    <footer class="footer">
-      <p>Click a player button or use keyboard shortcuts to play walk-up music.</p>
-      <div class="shortcuts">
-        <span><kbd>1</kbd>-<kbd>0</kbd> Play player 1-10</span>
-        <span><kbd>M</kbd> Toggle mute</span>
+    <!-- Defensive Lineup Panel (modal) -->
+    <div id="defensive-panel" class="defensive-panel">
+      <div class="defensive-panel-content">
+        <div class="defensive-panel-header">
+          <h2>Defensive Lineup</h2>
+          <button id="close-defensive-btn" class="close-defensive-btn" title="Close">&times;</button>
+        </div>
+
+        <div class="defensive-panel-body">
+          <div class="baseball-diamond">
+            <!-- Outfield -->
+            <div class="outfield">
+              <div class="position-slot" data-position="LF">
+                <label>LF</label>
+                <select id="pos-LF" class="position-select"></select>
+              </div>
+              <div class="position-slot" data-position="CF">
+                <label>CF</label>
+                <select id="pos-CF" class="position-select"></select>
+              </div>
+              <div class="position-slot" data-position="RF">
+                <label>RF</label>
+                <select id="pos-RF" class="position-select"></select>
+              </div>
+            </div>
+
+            <!-- Infield -->
+            <div class="infield">
+              <div class="infield-row infield-top">
+                <div class="position-slot" data-position="SS">
+                  <label>SS</label>
+                  <select id="pos-SS" class="position-select"></select>
+                </div>
+                <div class="position-slot" data-position="2B">
+                  <label>2B</label>
+                  <select id="pos-2B" class="position-select"></select>
+                </div>
+              </div>
+              <div class="infield-row infield-corners">
+                <div class="position-slot" data-position="3B">
+                  <label>3B</label>
+                  <select id="pos-3B" class="position-select"></select>
+                </div>
+                <div class="position-slot pitcher-slot" data-position="P">
+                  <label>P</label>
+                  <select id="pos-P" class="position-select"></select>
+                </div>
+                <div class="position-slot" data-position="1B">
+                  <label>1B</label>
+                  <select id="pos-1B" class="position-select"></select>
+                </div>
+              </div>
+              <div class="infield-row infield-catcher">
+                <div class="position-slot" data-position="C">
+                  <label>C</label>
+                  <select id="pos-C" class="position-select"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="defensive-panel-footer">
+          <button id="clear-defensive-btn" class="clear-defensive-btn">Clear All</button>
+          <button id="save-defensive-btn" class="save-defensive-btn">Save &amp; Close</button>
+        </div>
       </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Click a player button to play walk-up music.</p>
     </footer>
   </div>
 

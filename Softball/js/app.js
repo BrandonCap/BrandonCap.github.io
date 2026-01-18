@@ -152,7 +152,23 @@
 
     // Mute button
     if (elements.muteBtn) {
-      elements.muteBtn.addEventListener('click', toggleMute);
+      let muteTouched = false;
+      elements.muteBtn.addEventListener('touchstart', function(e) {
+        muteTouched = true;
+      }, { passive: true });
+      elements.muteBtn.addEventListener('touchend', function(e) {
+        if (muteTouched) {
+          e.preventDefault();
+          toggleMute();
+          muteTouched = false;
+        }
+      });
+      elements.muteBtn.addEventListener('click', function(e) {
+        if (!muteTouched) {
+          toggleMute();
+        }
+        muteTouched = false;
+      });
     }
 
     // View toggle

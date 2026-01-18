@@ -168,6 +168,10 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: var(--transition);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .mute-btn:hover {

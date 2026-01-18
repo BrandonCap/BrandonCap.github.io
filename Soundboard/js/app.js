@@ -451,13 +451,30 @@
     item.dataset.playerId = player.id;
     item.draggable = true;
 
+    const isFirst = index === 0;
+    const isLast = index === state.lineup.length - 1;
+
     item.innerHTML = `
       <span class="lineup-position">${index + 1}</span>
+      <div class="lineup-reorder-btns">
+        <button class="lineup-move-btn lineup-move-up" title="Move up" ${isFirst ? 'disabled' : ''}>&#9650;</button>
+        <button class="lineup-move-btn lineup-move-down" title="Move down" ${isLast ? 'disabled' : ''}>&#9660;</button>
+      </div>
       <span class="lineup-player-info">
         ${player.number ? `#${player.number} ` : ''}${escapeHtml(player.name)}
       </span>
       <button class="lineup-remove-btn" title="Remove from lineup">&times;</button>
     `;
+
+    item.querySelector('.lineup-move-up').addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveInLineup(player.id, -1);
+    });
+
+    item.querySelector('.lineup-move-down').addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveInLineup(player.id, 1);
+    });
 
     item.querySelector('.lineup-remove-btn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -647,6 +664,21 @@
   // Remove player from lineup
   function removeFromLineup(playerId) {
     state.lineup = state.lineup.filter(id => id !== playerId);
+    renderLineupPanel();
+  }
+
+  // Move player up or down in lineup
+  function moveInLineup(playerId, direction) {
+    const currentIndex = state.lineup.indexOf(playerId);
+    const newIndex = currentIndex + direction;
+
+    if (currentIndex === -1 || newIndex < 0 || newIndex >= state.lineup.length) {
+      return;
+    }
+
+    // Swap positions
+    state.lineup.splice(currentIndex, 1);
+    state.lineup.splice(newIndex, 0, playerId);
     renderLineupPanel();
   }
 

@@ -724,6 +724,40 @@ body {
   font-weight: 500;
 }
 
+.lineup-reorder-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lineup-move-btn {
+  width: 24px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+  padding: 0;
+  line-height: 1;
+}
+
+.lineup-move-btn:hover:not(:disabled) {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+.lineup-move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .lineup-remove-btn,
 .roster-add-btn {
   width: 28px;
